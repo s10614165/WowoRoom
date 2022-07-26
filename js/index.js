@@ -5,6 +5,8 @@ const productWrapUl = document.querySelector('.productWrap')
 const productSelect = document.querySelector('.productSelect')
 const productWrap = document.querySelector('.productWrap')
 const shoppingCartTable = document.querySelector('.shoppingCart-table')
+const orderInfoForm = document.querySelector('.orderInfo-form')
+const orderInfobtn = document.querySelector('.orderInfo-btn')
 let getProduct = () => {
   return new Promise((resolve, reject) => {
     resolve(
@@ -29,6 +31,10 @@ let getCart = () => {
 
 }
 let postAddCart = (id) => {
+
+  // const cartRes = await axios.post()
+  // render(cartRes)
+
   return new Promise((resolve, reject) => {
     resolve(
 
@@ -38,6 +44,8 @@ let postAddCart = (id) => {
           "quantity": 1
         }
       })
+
+
     )
     reject(
       console.log(res)
@@ -145,7 +153,6 @@ async function renderProuduct(category) {
 async function renderCart() {
   try {
     CartData = await getCart();
-    console.log(CartData)
     await renderCartInnerhtml(CartData)
   } catch (error) {
     console.log(error)
@@ -158,29 +165,33 @@ async function renderCart() {
 productSelect.addEventListener('change', function () {
   renderProuduct(productSelect.value);
 });
-productWrap.addEventListener('click', (e) => {
+productWrap.addEventListener('click', async (e) => {
   e.preventDefault();
-  if (e.target.className == 'addCardBtn') {
+  if (e.target.className === 'addCardBtn') {
     let productNum = e.target.dataset.id
 
-    postAddCart(productNum)
+    await postAddCart(productNum)
     renderCart()
 
   }
 })
 
-shoppingCartTable.addEventListener('click', (e) => {
+shoppingCartTable.addEventListener('click', async (e) => {
   e.preventDefault()
   let productId = e.target.dataset.id
   if (e.target.className == 'material-icons') {
-    postDeletCart(productId)
-    renderCart();
+    await postDeletCart(productId)
+    await renderCart();
     return
   }
   if (e.target.className === 'discardAllBtn') {
-    let res = postDeletAllCart()
-    renderCart()
+    await postDeletAllCart()
+    await renderCart()
   }
+})
+
+orderInfobtn.addEventListener('click', async (e) => {
+
 })
 
 
