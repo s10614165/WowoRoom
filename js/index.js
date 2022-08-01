@@ -1,12 +1,14 @@
 let ProductData;
 let CartData;
-let api_path = 'wa8mjhhtzndutpqx4hnhb71dc1l2'
+const api_path = 'wa8mjhhtzndutpqx4hnhb71dc1l2'
+const authorization = 'wA8mJHhTzndutpqX4hnHb71Dc1L2'
 const productWrapUl = document.querySelector('.productWrap')
 const productSelect = document.querySelector('.productSelect')
 const productWrap = document.querySelector('.productWrap')
 const shoppingCartTable = document.querySelector('.shoppingCart-table')
 const orderInfoForm = document.querySelector('.orderInfo-form')
 const orderInfobtn = document.querySelector('.orderInfo-btn')
+// 請求商品內容
 let getProduct = () => {
   return new Promise((resolve, reject) => {
     resolve(
@@ -19,6 +21,7 @@ let getProduct = () => {
     )
   })
 }
+// 請求購物車
 let getCart = () => {
   return new Promise((resolve, reject) => {
     resolve(
@@ -30,6 +33,7 @@ let getCart = () => {
   })
 
 }
+// 發送購物車內容
 let postAddCart = (id) => {
 
   // const cartRes = await axios.post()
@@ -53,6 +57,7 @@ let postAddCart = (id) => {
   })
 
 }
+//  發送刪除購物車內容
 let postDeletCart = (id) => {
   return new Promise((resolve, reject) => {
     resolve(
@@ -65,6 +70,7 @@ let postDeletCart = (id) => {
   })
 
 }
+//發送刪除所有購物車內容
 let postDeletAllCart = () => {
   return new Promise((resolve, reject) => {
     resolve(
@@ -76,6 +82,26 @@ let postDeletAllCart = () => {
     )
   })
 }
+// 發送顧客資料
+let postOrderData = (order) => {
+  return new Promise((resolve, reject) => {
+    resolve(
+
+      axios.post(`https://livejs-api.hexschool.io/api/livejs/v1/customer/${api_path}/orders`, {
+        "data": {
+          "user":
+            order
+
+        }
+      })
+    )
+    reject(
+      console.log(res)
+    )
+  })
+}
+
+// 渲染商品資料
 let renderProductInnerhtml = (ProductAry, category) => {
   let str = ''
 
@@ -100,6 +126,7 @@ let renderProductInnerhtml = (ProductAry, category) => {
   productWrapUl.innerHTML = str
   return ProductAry
 }
+// 渲染購物車資料
 let renderCartInnerhtml = (cartdata) => {
   let str = '';
   cartdata.data.carts.forEach((item) => {
@@ -110,9 +137,11 @@ let renderCartInnerhtml = (cartdata) => {
               <p>${item.product.title}</p>
             </div>
           </td>
-          <td>NT$${item.product.origin_price}</td>
-          <td>1</td>
           <td>NT$${item.product.price}</td>
+          
+          <td><input type="button" value="-" class="minQuantity" data-id=${item.id}>${item.quantity}<input type="button" value="+" class="addQuantity" data-id=${item.id}></td>
+
+          <td>NT$${item.product.price * item.quantity}</td>
           <td class="discardBtn">
             <a href="#" class="material-icons" data-id=${item.id}>
               clear
@@ -140,6 +169,52 @@ let renderCartInnerhtml = (cartdata) => {
   shoppingCartTable.innerHTML = totalstr;
   return cartdata
 }
+// 清除已送出顧客資料
+let cleanOrderValue = async () => {
+  for (i = 0; i < orderInfoForm.length - 1; i++) {
+    orderInfoForm.elements[i].value = ''
+  }
+}
+// 修改購物車數量
+let PatchCartQuantity = (id, action, quantity) => {
+  if (quantity === 1 && action === 'minQuantity') {
+    alert('產品數量不可小於1')
+    return
+  }
+  switch (action) {
+    case 'addQuantity':
+      return new Promise((resolve, reject) => {
+        resolve(
+          axios.patch(`https://livejs-api.hexschool.io/api/livejs/v1/customer/${api_path}/carts`, {
+            "data": {
+              "id": id,
+              "quantity": quantity + 1
+            }
+          })
+        )
+        reject(
+          alert(res.response.data.message)
+        )
+      })
+    case 'minQuantity':
+      return new Promise((resolve, reject) => {
+        resolve(
+          axios.patch(`https://livejs-api.hexschool.io/api/livejs/v1/customer/${api_path}/carts`, {
+            "data": {
+              "id": id,
+              "quantity": quantity - 1
+            }
+          })
+        )
+        reject(
+
+
+        )
+      })
+  }
+
+}
+// 渲染商品資訊
 async function renderProuduct(category) {
   try {
     ProductData = await getProduct();
@@ -149,7 +224,7 @@ async function renderProuduct(category) {
   }
 
 }
-
+// 渲染購物車
 async function renderCart() {
   try {
     CartData = await getCart();
@@ -161,21 +236,22 @@ async function renderCart() {
 
 
 }
-
+//切換商品類型
 productSelect.addEventListener('change', function () {
+  console.log(productSelect.value)
   renderProuduct(productSelect.value);
 });
+//加入購物車
 productWrap.addEventListener('click', async (e) => {
   e.preventDefault();
   if (e.target.className === 'addCardBtn') {
     let productNum = e.target.dataset.id
-
     await postAddCart(productNum)
     renderCart()
 
   }
 })
-
+//購物車相關操作（
 shoppingCartTable.addEventListener('click', async (e) => {
   e.preventDefault()
   let productId = e.target.dataset.id
@@ -187,14 +263,44 @@ shoppingCartTable.addEventListener('click', async (e) => {
   if (e.target.className === 'discardAllBtn') {
     await postDeletAllCart()
     await renderCart()
+    return
+  }
+  if (e.target.className === 'addQuantity' || e.target.className === 'minQuantity') {
+    let productId = e.target.dataset.id
+    let productquantity;
+    CartData.data.carts.forEach((item) => {
+      if (item.id === productId) {
+        productquantity = item.quantity
+      }
+    })
+    await PatchCartQuantity(productId, e.target.className, productquantity)
+    await renderCart()
+    return
   }
 })
-
 orderInfobtn.addEventListener('click', async (e) => {
+  let orderInfoData = []
+  let user = {};
+  e.preventDefault()
+
+  for (i = 0; i < orderInfoForm.length - 1; i++) {
+    orderInfoData.push(orderInfoForm.elements[i].value)
+  }
+  user = {
+    name: `${orderInfoData[0]}`,
+    tel: `${orderInfoData[1]}`,
+    email: `${orderInfoData[2]}`,
+    address: `${orderInfoData[3]}`,
+    payment: `${orderInfoData[4]}`
+  }
+  await postOrderData(user);
+  alert('訂單已送出')
+
+  await renderCart();
+  await cleanOrderValue()
 
 })
 
-
-
+// －－－－－－－－初始渲染－－－－－－－－
 renderProuduct(productSelect.value);
 renderCart();
