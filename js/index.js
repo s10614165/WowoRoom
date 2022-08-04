@@ -9,7 +9,7 @@ const shoppingCartTable = document.querySelector('.shoppingCart-table')
 const orderInfoForm = document.querySelector('.orderInfo-form')
 const orderInfobtn = document.querySelector('.orderInfo-btn')
 // 請求商品內容
-let getProduct = () => {
+const getProduct = () => {
   return new Promise((resolve, reject) => {
     resolve(
 
@@ -22,7 +22,7 @@ let getProduct = () => {
   })
 }
 // 請求購物車
-let getCart = () => {
+const getCart = () => {
   return new Promise((resolve, reject) => {
     resolve(
       axios.get(`https://livejs-api.hexschool.io/api/livejs/v1/customer/${api_path}/carts`)
@@ -34,7 +34,7 @@ let getCart = () => {
 
 }
 // 發送購物車內容
-let postAddCart = (id) => {
+const postAddCart = (id) => {
 
   // const cartRes = await axios.post()
   // render(cartRes)
@@ -58,7 +58,7 @@ let postAddCart = (id) => {
 
 }
 //  發送刪除購物車內容
-let postDeletCart = (id) => {
+const postDeletCart = (id) => {
   return new Promise((resolve, reject) => {
     resolve(
 
@@ -71,7 +71,7 @@ let postDeletCart = (id) => {
 
 }
 //發送刪除所有購物車內容
-let postDeletAllCart = () => {
+const postDeletAllCart = () => {
   return new Promise((resolve, reject) => {
     resolve(
 
@@ -83,7 +83,7 @@ let postDeletAllCart = () => {
   })
 }
 // 發送顧客資料
-let postOrderData = (order) => {
+const postOrderData = (order) => {
   return new Promise((resolve, reject) => {
     resolve(
 
@@ -102,7 +102,7 @@ let postOrderData = (order) => {
 }
 
 // 渲染商品資料
-let renderProductInnerhtml = (ProductAry, category) => {
+const renderProductInnerhtml = (ProductAry, category) => {
   let str = ''
 
   ProductAry = ProductAry.data.products.filter((item) => {
@@ -127,7 +127,7 @@ let renderProductInnerhtml = (ProductAry, category) => {
   return ProductAry
 }
 // 渲染購物車資料
-let renderCartInnerhtml = (cartdata) => {
+const renderCartInnerhtml = (cartdata) => {
   let str = '';
   cartdata.data.carts.forEach((item) => {
     str += `<tr>
@@ -170,13 +170,13 @@ let renderCartInnerhtml = (cartdata) => {
   return cartdata
 }
 // 清除已送出顧客資料
-let cleanOrderValue = async () => {
+const cleanOrderValue = async () => {
   for (i = 0; i < orderInfoForm.length - 1; i++) {
     orderInfoForm.elements[i].value = ''
   }
 }
 // 修改購物車數量
-let PatchCartQuantity = (id, action, quantity) => {
+const PatchCartQuantity = (id, action, quantity) => {
   if (quantity === 1 && action === 'minQuantity') {
     alert('產品數量不可小於1')
     return
